@@ -12,12 +12,27 @@ ROOT_HOME = "/data/data/com.termux/files/root"
 SYS_SHELL = "/system/bin/sh"
 ANDROIDSYSTEM_PATHS = "/system/bin:/system/xbin"
 
-# Superuser config
-MAGISK_BINARY = Path("/sbin/magisk")
-SU_BINARY = [
-    Path(p)
-    for p in ['/su/bin/su'
-              '/sbin/su'
-              '/system/xbin/su'
-              '/system/bin/su']
-]
+## Location of su binaries.
+
+SU_BINARY = {
+    'magisk': {
+        'verstring': r'MAGISKSU',
+        'veropt': ["su", "--version"],
+        'path': Path("/sbin/magisk")
+    },
+    'losu': {
+        'verstring': r'cm-su',
+        'veropt': ["--version"],
+        'path': Path("/system/xbin/su")
+    },
+    'chsu': {
+        'verstring': r'SUPERSU',
+        'veropt': ["--version"],
+        'multipath': True,
+        'path': [
+            Path("/su/bin/su"),
+            Path("/sbin/su"),
+            Path("/system/xbin/su"),
+        ]
+    },
+}

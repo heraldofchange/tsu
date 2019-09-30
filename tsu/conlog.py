@@ -5,6 +5,7 @@
 import logging
 import subprocess
 
+from decorator import decorator
 import functools
 """
  Conlog : A console.log for Python
@@ -26,24 +27,27 @@ class Conlog():
     DEBUG = 10
     NONE = 0
 
-    def fn(self, func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            console = self
-            console.debug = functools.partial(self.__debug, func.__name__)
-            val = func(console, *args, **kwargs)
-            return val
-
-        return wrapper
-
-    def __init__(self, module, enabled=True, level=NONE):
-        self.module = module
+    def __init__(self, level, enabled=True, ):
         self.enabled = enabled
         self.level = level
         self.logger = logging.getLogger(module)
         self.logger.setLevel(level)
         self.sh = logging.StreamHandler()
         self.logger.addHandler(self.sh)
+
+    @decorator
+    def module(self, cls, *args, **kwargs):
+        print(args)
+        cls.console = self.console
+
+    @decorator
+    def fn(self, func, *args, **kwargs):
+        console = self
+        console.debug = functools.partial(self.__debug, func.__name__)
+        val = func(console, *args, **kwargs)
+        return val
+
+
 
     def __debug(self, func, msg):
         format = f"{self.module}:{func}  {msg}"

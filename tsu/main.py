@@ -10,7 +10,8 @@ from pathlib import Path, PurePath
 from docopt import docopt
 
 from .conlog import Conlog
-from .exec import magisk_call
+from .exec import magisk_call, su_call, ver_cmp
+from .tsu_util import add_to_path
 
 from . import consts
 
@@ -21,17 +22,25 @@ def cli():
     """
     tsu A su interface wrapper for Termux
 
-    Usage: tsu
-        tsu [ -s SHELL ]  [-pe]
-        tsu [ -h | --help | --version ]
+    Usage: 
+        tsu
+        tsu [ -s SHELL ]  [-pe] [USER] 
+        tsu --debug [ -s SHELL ]  [-pe] [USER]
+        tsu -h | --help | --version 
+        
 
     Options:
     -s <shell>   Use an alternate specified shell.
+    -p           Prepend system binaries to PATH
+    -e           Start with a fresh environment.
+    --debug      Output debugging information to stderr.
     -h --help    Show this screen.
     --version    Show version.
+
     """
     args = docopt(cli.__doc__)
-    print(args)
+    if (args['--debug'] == True):
+        print(f"Called with {args}")
     env_copy = os.environ
 
     CONFIG_SHELL = args.get("-s")
@@ -40,13 +49,25 @@ def cli():
     shell = get_shell(CONFIG_SHELL)
     env_copy["HISTFILE"] = hist_file(shell)
 
-    # Check if we are on a Magisk kernel.
-    if consts.MAGISK_BINARY.exists():
-        magisk_call(shell, env_copy)
-    else:
-        su_bin = next((p for p in consts.SU_BINARY if p.exists()), None)
-        su_call(su_bin, shell, env_copy)
-    pass
+    # Check `su` binary
+
+    try:
+        # Check for magisk
+        magisk = consts.SU_BINARY['magisk']
+        if ver_cmp(magisk):
+            magisk_call(shell, env_copy)
+        else:
+            print("Incorrect Magisk su. ")
+            sys.exit(1)
+    except PermissionError as e:
+        conlog.debug(e)
+
+    try:
+        # Check lineage os su.
+        losu = consts.SU_BINARY['losu']
+    # su_call(su_bin, shell, env_copy)
+    except PermissionError as e:
+        pass
 
 
 def hist_file(shell):
