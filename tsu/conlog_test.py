@@ -1,25 +1,37 @@
 from conlog import Conlog
 
+import inspect
 
-@Conlog.module
+
 class Timetools:
-    def wait(console, s):
-        console.debug(f's={s}')
+    @Conlog.fn
+    def wait(self, console, s):
+
+        console.debug(r'{s=}')
         print("waiting")
 
-    def retry(console, n):
+    @Conlog.fn
+    def retry(self, console, n):
+        console.debug(r'{n=}')
         print("rettrun")
-        console.debug(f'=n={n}')
+
+    @Conlog.fn
+    def sleep(self, console, secs, minutes):
+        print("I am Sleeping")
+        console.debug(r' =>  {secs=} {minutes=}')
 
 
-console = Conlog(Conlog.Debug, enabled=True)
+console = Conlog(Conlog.DEBUG, enabled=True)
 
-timetools = Timetools(conlog=Conlog.DEBUG)
+
 
 
 def main(arg):
+    ## Factory function
+    timetools = console.impl(Timetools, Conlog.DEBUG, enabled=True)
     timetools.wait(5)
-    timetools.retry(5)
+    timetools.retry(9)
+    timetools.sleep(4, 5)
 
 
 main(5)

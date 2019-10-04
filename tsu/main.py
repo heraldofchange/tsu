@@ -10,7 +10,7 @@ from pathlib import Path, PurePath
 from docopt import docopt
 
 from .conlog import Conlog
-from .exec import magisk_call, su_call, ver_cmp
+from .exec import TsuExec
 from .tsu_util import add_to_path
 
 from . import consts
@@ -50,11 +50,11 @@ def cli():
     env_copy["HISTFILE"] = hist_file(shell)
 
     # Check `su` binary
-
+    tsu_exec = conlog.impl(TsuExec, Conlog.DEBUG, enabled=True)
     try:
         # Check for magisk
         magisk = consts.SU_BINARY['magisk']
-        if ver_cmp(magisk):
+        if tsu_exec.ver_cmp(magisk):
             magisk_call(shell, env_copy)
         else:
             print("Incorrect Magisk su. ")

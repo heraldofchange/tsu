@@ -14,15 +14,14 @@ from .conlog import Conlog
 print(getfullargspec(Conlog.fn))
 
 
-@Conlog.module
-class exec:
+class TsuExec:
     @Conlog.fn
-    def ver_cmp(console, su):
+    def ver_cmp(self, console, su):
         reg = su['verstring']
         checkver = [su['path']] + su['veropt']
         try:
             ver = subprocess.check_output(checkver).decode('utf-8')
-            console.debug(f"{ver_cmp}")
+            console.debug(r"{ver=}")
             if re.match(reg, ver):
                 return True
             else:
